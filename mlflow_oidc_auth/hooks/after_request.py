@@ -73,7 +73,7 @@ def _filter_search_experiments(resp: Response):
 
     # filter out unreadable
     for e in list(response_message.experiments):
-        if not can_read.get(e.experiment_id, default_can_read):
+        if not can_read.get(e.experiment_id):
             response_message.experiments.remove(e)
 
     # re-fetch to fill max results

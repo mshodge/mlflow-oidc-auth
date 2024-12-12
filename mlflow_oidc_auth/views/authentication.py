@@ -30,28 +30,39 @@ def callback():
     app.logger.debug(f"Token: {token}")
     session["user"] = token["userinfo"]
 
-    email = token["userinfo"]["email"]
-    if email is None:
-        return "No email provided", 401
-    display_name = token["userinfo"]["name"]
-    is_admin = False
-    user_groups = []
-
-    if config.OIDC_GROUP_DETECTION_PLUGIN:
-        import importlib
-
-        user_groups = importlib.import_module(config.OIDC_GROUP_DETECTION_PLUGIN).get_user_groups(
-            token["access_token"]
-        )
+    if config.FAKE_USER == "True":
+        email = "fake@faker.com"
+        display_name = "Fake Faker"
+        is_admin = False
     else:
-        user_groups = token["userinfo"][config.OIDC_GROUPS_ATTRIBUTE]
+        email = token["userinfo"]["email"]
+        if email is None:
+            return "No email provided", 401
+        display_name = token["userinfo"]["email"].split("@")[0].replace(".", " ")
+        if config.ADMIN_GROUP_NAME in token["userinfo"]["roles"]:
+            is_admin = True
 
-    app.logger.debug(f"User groups: {user_groups}")
 
-    if config.OIDC_ADMIN_GROUP_NAME in user_groups:
-        is_admin = True
-    elif not any(group in user_groups for group in config.OIDC_GROUP_NAME):
+    user_groups = []
+    
+    if not any(item in email for item in config.EMAIL_ALLOW_LIST.split(" ")):
         return "User is not allowed to login", 401
+
+    # if config.OIDC_GROUP_DETECTION_PLUGIN:
+    #     import importlib
+
+    #     user_groups = importlib.import_module(config.OIDC_GROUP_DETECTION_PLUGIN).get_user_groups(
+    #         token["access_token"]
+    #     )
+    # else:
+    #     user_groups = user[config.OIDC_GROUPS_ATTRIBUTE]
+
+    # app.logger.debug(f"User groups: {user_groups}")
+
+    # if config.OIDC_ADMIN_GROUP_NAME in user_groups:
+    #     is_admin = True
+    # elif not any(group in user_groups for group in config.OIDC_GROUP_NAME):
+    #     return "User is not allowed to login", 401
 
     create_user(username=email.lower(), display_name=display_name, is_admin=is_admin)
     populate_groups(group_names=user_groups)

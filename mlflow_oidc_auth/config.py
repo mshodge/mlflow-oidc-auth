@@ -7,7 +7,7 @@ import importlib
 from dotenv import load_dotenv
 from mlflow.server import app
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv(override=True)  # take environment variables from .env.
 app.logger.setLevel(os.environ.get("LOG_LEVEL", "INFO"))
 
 class AppConfig:
@@ -25,6 +25,9 @@ class AppConfig:
         self.OIDC_REDIRECT_URI = os.environ.get("OIDC_REDIRECT_URI", None)
         self.OIDC_CLIENT_ID = os.environ.get("OIDC_CLIENT_ID", None)
         self.OIDC_CLIENT_SECRET = os.environ.get("OIDC_CLIENT_SECRET", None)
+        self.FAKE_USER = os.environ.get("FAKE_USER", "False")
+        self.ADMIN_GROUP_NAME = os.environ.get("ADMIN_GROUP_NAME", "Group.Admin")
+        self.EMAIL_ALLOW_LIST = os.environ.get("EMAIL_ALLOW_LIST", None)
 
         # session
         self.SESSION_TYPE = os.environ.get("SESSION_TYPE", "cachelib")
